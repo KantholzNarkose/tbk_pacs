@@ -101,9 +101,13 @@ p.note{color:var(--dim);font-size:13px;margin:8px 0 0;max-width:75ch}
     <div class="form">
       <label>Licht<select id="fLight">
         <option>Raum hell</option><option>Abgedunkelt mit LED-Leiste</option><option>Tageslicht</option><option>Anderes</option></select></label>
-      <label>Silhouette<select id="fSil">
+      <label>Untergrund<select id="fGround">
+        <option>matt</option><option>glänzend</option></select></label>
+      <label>Tier liegt<select id="fPose">
+        <option>wie hingelegt</option><option>gelagert</option></select></label>
+      <label>Silhouette im Ergebnis<select id="fSil">
         <option>brauchbar</option><option>teilweise</option><option>unbrauchbar</option></select></label>
-      <label>Arme und Beine getrennt<select id="fLimbs">
+      <label>Mittelachse: Arme und Beine erkannt<select id="fLimbs">
         <option>alle</option><option>teilweise</option><option>keine</option></select></label>
       <label>Notiz<input id="fNote" type="text" placeholder="z. B. Arme lagen auf dem Bauch"></label>
     </div>
@@ -114,7 +118,7 @@ p.note{color:var(--dim);font-size:13px;margin:8px 0 0;max-width:75ch}
     </div>
     <div class="tablewrap"><table id="logTable"><thead></thead><tbody></tbody></table></div>
     <textarea id="logText" class="hidden" readonly aria-label="Protokoll als Text"></textarea>
-    <p class="note">Das Protokoll enthält nur Zahlen und deine Bewertung, keine Bilder. Es bleibt auf diesem Gerät gespeichert, bis du es leerst.</p>
+    <p class="note">Bewertet wird das Ergebnis auf dem Bildschirm, nicht das Tier selbst: Hat die App Silhouette und Arme und Beine richtig gefunden? Das Protokoll enthält nur Zahlen und deine Bewertung, keine Bilder. Es bleibt auf diesem Gerät gespeichert, bis du es leerst.</p>
   </section>
 
   <section class="wide">
@@ -2063,10 +2067,10 @@ function discard(){
 }
 
 // ---------- Protokoll (nur Zahlen, auf dem Gerät) ----------
-var COLS = ['Nr', 'Zeit', 'Licht', 'Silhouette', 'Gliedmaßen', 'Körperteile', 'Äste', 'Fläche cm²', 'Trennschärfe', 'Schwelle', 'Streuung', 'Überstrahlt %', 'Rand', 'Flecken', 'px/mm', 'Zeit ms', 'Kamera', 'Notiz'];
+var COLS = ['Nr', 'Zeit', 'Licht', 'Untergrund', 'Lagerung', 'Silhouette', 'Gliedmaßen erkannt', 'Körperteile', 'Äste', 'Fläche cm²', 'Trennschärfe', 'Schwelle', 'Streuung', 'Überstrahlt %', 'Rand', 'Flecken', 'px/mm', 'Zeit ms', 'Kamera', 'Notiz'];
 var log = [];
-try { log = JSON.parse(localStorage.getItem('tb-m1-log') || '[]'); } catch (e) { log = []; }
-function saveLog(){ try { localStorage.setItem('tb-m1-log', JSON.stringify(log)); } catch (e) {} }
+try { log = JSON.parse(localStorage.getItem('tb-m1-log-v2') || '[]'); } catch (e) { log = []; }
+function saveLog(){ try { localStorage.setItem('tb-m1-log-v2', JSON.stringify(log)); } catch (e) {} }
 function renderLog(){
   var thead = document.querySelector('#logTable thead'), tbody = document.querySelector('#logTable tbody');
   thead.innerHTML = ''; tbody.innerHTML = '';
@@ -2076,7 +2080,7 @@ function renderLog(){
 $('btnLog').addEventListener('click', function(){
   if (!last) return;
   var S = last.S, K = last.K;
-  log.push([String(log.length + 1), new Date().toLocaleString('de-DE'), $('fLight').value, $('fSil').value, $('fLimbs').value,
+  log.push([String(log.length + 1), new Date().toLocaleString('de-DE'), $('fLight').value, $('fGround').value, $('fPose').value, $('fSil').value, $('fLimbs').value,
     K ? String(K.branches.filter(function(b){ return b.isLimb; }).length) : '0', K ? String(K.branches.length) : '0',
     fmt(S.areaCm2, 0), fmt(S.separability, 2), fmt(S.threshold, 1), fmt(S.spread, 1), fmt(S.overexposed * 100, 2),
     S.touchesEdge ? 'ja' : 'nein', String(Math.max(0, S.pieces - 1)), fmt(last.pxPerMm, 2), String(Math.round(last.T.total)), last.cam, $('fNote').value]);
